@@ -12,7 +12,7 @@
   page=page.replace('<input type="number" id="cost-power" min="0" step="1" value="1000" inputmode="decimal">','<input type="text" id="cost-power" inputmode="decimal" autocomplete="off" value="1000">');
   page=page.replace('<input type="number" id="cost-hours" min="0" max="24" step="0.1" value="8" inputmode="decimal">','<input type="text" id="cost-hours" inputmode="decimal" autocomplete="off" value="8">');
   page=page.replace('<input type="number" id="cost-tariff" min="0" step="0.01" value="6.5" inputmode="decimal">','<input type="text" id="cost-tariff" inputmode="decimal" autocomplete="off" value="6.5">');
-  page=page.replace("/* ---------------- ENERGY COST ---------------- */", "/* ---------------- ENERGY COST ---------------- */\\nfunction readCostNumber(id){const raw=String(document.getElementById(id).value??'').trim().replace(/[\\\\s\\\\u00a0]+/g,'').replace(',','.');return raw===''?NaN:Number(raw);}");
+  page=page.replace("/* ---------------- ENERGY COST ---------------- */", "/* ---------------- ENERGY COST ---------------- */\nfunction readCostNumber(id){const raw=String(document.getElementById(id).value??'').trim().replace(/\\s+/g,'').replace(',','.');return raw===''?NaN:Number(raw);}");return raw===''?NaN:Number(raw);}");
   page=page.replace("parseFloat(document.getElementById('cost-power').value)", "readCostNumber('cost-power')");
   page=page.replace("parseFloat(document.getElementById('cost-count').value)", "readCostNumber('cost-count')");
   page=page.replace("parseFloat(document.getElementById('cost-hours').value)", "readCostNumber('cost-hours')");
