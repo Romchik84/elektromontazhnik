@@ -94,7 +94,100 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
 
   document.open();
   document.write(page);
+
   document.close();
+
+  // Turn the battery calculator fields into compact expandable groups.
+  const batteryRoot=document.getElementById('tab-battery');
+  if(batteryRoot){
+    const originalGrid=batteryRoot.querySelector('.field-grid');
+    if(originalGrid){
+      const makeGroup=(title,ids,isOpen)=>{
+        const details=document.createElement('details');
+        details.className='battery-accordion';
+        if(isOpen) details.open=true;
+        const summary=document.createElement('summary');
+        summary.textContent=title;
+        const grid=document.createElement('div');
+        grid.className='field-grid battery-accordion-grid';
+        ids.forEach(id=>{
+          const input=document.getElementById(id);
+          const field=input&&input.closest('.field');
+          if(field) grid.appendChild(field);
+        });
+        details.append(summary,grid);
+        return details;
+      };
+      const groups=document.createElement('div');
+      groups.className='battery-accordion-list';
+      groups.append(
+        makeGroup('Параметры устройства и нагрузки',
+          ['battery-mode','battery-power','battery-device-voltage','battery-device-current','battery-count'],true),
+        makeGroup('Параметры аккумулятора или повербанка',
+          ['battery-capacity','battery-unit','battery-voltage','battery-charge','battery-efficiency'],false)
+      );
+      originalGrid.replaceWith(groups);
+
+      const converter=document.createElement('details');
+      converter.className='battery-accordion battery-converter';
+      converter.innerHTML=`
+        <summary>Перевод мА·ч в Вт·ч</summary>
+        <div class="field-grid battery-accordion-grid">
+          <div class="field"><label for="mahwh-capacity">Ёмкость, мА·ч</label><input type="text" id="mahwh-capacity" inputmode="decimal" autocomplete="off" value="20000"></div>
+          <div class="field"><label for="mahwh-voltage">Номинальное напряжение ячейки, В</label><input type="text" id="mahwh-voltage" inputmode="decimal" autocomplete="off" value="3.7"></div>
+        </div>
+        <div class="result" aria-live="polite">
+          <div class="row"><span class="k">Энергия</span><span class="v" id="mahwh-result">74 <small>Вт·ч</small></span></div>
+        </div>
+        <div class="note"><span class="tag">Формула</span><span>Вт·ч = мА·ч × В ÷ 1000. Для обычной Li-ion ячейки используйте номинальные 3,7 В, а не 4,2 В полного заряда. Для LiFePO₄ указывайте номинальное напряжение из паспорта.</span></div>
+      `;
+      const mainResult=document.getElementById('battery-result');
+      if(mainResult) batteryRoot.insertBefore(converter,mainResult);
+
+      const calcMahWh=()=>{
+        const parse=id=>{
+          const raw=String(document.getElementById(id).value??'').trim().replace(/\\s+/g,'').replace(',','.');
+          return raw===''?NaN:Number(raw);
+        };
+        const capacity=parse('mahwh-capacity');
+        const voltage=parse('mahwh-voltage');
+        const output=document.getElementById('mahwh-result');
+        if(!Number.isFinite(capacity)||!Number.isFinite(voltage)||capacity<=0||voltage<=0){
+          output.textContent='Проверьте ёмкость и напряжение';
+          return;
+        }
+        output.innerHTML=new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(capacity*voltage/1000)+' <small>Вт·ч</small>';
+      };
+      document.getElementById('mahwh-capacity').addEventListener('input',calcMahWh);
+      document.getElementById('mahwh-voltage').addEventListener('input',calcMahWh);
+      calcMahWh();
+
+      const style=document.createElement('style');
+      style.textContent=`
+        .battery-accordion-list{display:grid;gap:10px;margin:12px 0}
+        .battery-accordion{border:1px solid var(--border,#343a40);border-radius:12px;background:var(--surface,#1d2227);overflow:hidden;margin:0 0 12px}
+        .battery-accordion>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;font-weight:700;color:var(--text,#f0f0f0);min-height:48px}
+        .battery-accordion>summary::-webkit-details-marker{display:none}
+        .battery-accordion>summary:after{content:'＋';font-size:20px;line-height:1;color:var(--accent,#e6b83f);flex:0 0 auto}
+        .battery-accordion[open]>summary:after{content:'−'}
+        .battery-accordion[open]>summary{border-bottom:1px solid var(--border,#343a40)}
+        .battery-accordion-grid{padding:12px 14px 14px}
+        .battery-accordion .result{margin:0 14px 14px}
+        .battery-accordion .note{margin:0 14px 14px}
+      `;
+      document.head.appendChild(style);
+
+      batteryRoot.querySelectorAll('details.battery-accordion').forEach(item=>{
+        item.addEventListener('toggle',()=>{
+          if(item.open){
+            batteryRoot.querySelectorAll('details.battery-accordion').forEach(other=>{
+              if(other!==item) other.open=false;
+            });
+          }
+        });
+      });
+    }
+  }
  }catch(e){
   document.body.textContent="Не удалось загрузить приложение: "+e.message;
  }
