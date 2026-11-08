@@ -1,5 +1,13 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#14171a"><title>Электромонтажник</title></head>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14171a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Электромонтажник</title>
+</head>
 <body style="margin:0;background:#14171a;color:#eee;font:16px sans-serif;padding:20px">Загрузка приложения…
 <script>
 (async()=>{
@@ -8,32 +16,50 @@
   const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
   const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
   let page=await new Response(stream).text();
-  // Mobile Safari: use text decimal inputs and normalize comma/dot decimals.
-  page=page.replace('<input type="number" id="cost-power" min="0" step="1" value="1000" inputmode="decimal">','<input type="text" id="cost-power" inputmode="decimal" autocomplete="off" value="1000">');
-  page=page.replace('<input type="number" id="cost-hours" min="0" max="24" step="0.1" value="8" inputmode="decimal">','<input type="text" id="cost-hours" inputmode="decimal" autocomplete="off" value="8">');
-  page=page.replace('<input type="number" id="cost-tariff" min="0" step="0.01" value="6.5" inputmode="decimal">','<input type="text" id="cost-tariff" inputmode="decimal" autocomplete="off" value="6.5">');
-  page=page.replace("/* ---------------- ENERGY COST ---------------- */", "/* ---------------- ENERGY COST ---------------- */\nfunction readCostNumber(id){const raw=String(document.getElementById(id).value??'').trim().replace(/\\s+/g,'').replace(',','.');return raw===''?NaN:Number(raw);}");
-  page=page.replace("parseFloat(document.getElementById('cost-power').value)", "readCostNumber('cost-power')");
-  page=page.replace("parseFloat(document.getElementById('cost-count').value)", "readCostNumber('cost-count')");
-  page=page.replace("parseFloat(document.getElementById('cost-hours').value)", "readCostNumber('cost-hours')");
-  page=page.replace("parseFloat(document.getElementById('cost-days').value)", "readCostNumber('cost-days')");
-  page=page.replace("parseFloat(document.getElementById('cost-tariff').value)", "readCostNumber('cost-tariff')");
-  page=page.replace("    box.innerHTML='<div class=\"row\"><span class=\"v\">Проверьте значения: мощность и тариф неотрицательные, количество и дни больше нуля, часы — от 0 до 24.</span></div>';","    let warning=box.querySelector('.cost-validation-warning');if(!warning){warning=document.createElement('div');warning.className='row cost-validation-warning';warning.innerHTML='<span class=\"v\">Проверьте значения: мощность и тариф неотрицательные, количество и дни больше нуля, часы — от 0 до 24.</span>';box.prepend(warning);}warning.hidden=false;");
-  page=page.replace("  box.className='result';\n  const totalPower=power*count/1000;","  box.className='result';\n  const warning=box.querySelector('.cost-validation-warning');if(warning)warning.hidden=true;\n  const totalPower=power*count/1000;");
 
-  // Include text inputs in the same mobile field styling.
-  page=page.replace('.field input[type=number], .field select{','.field input[type=number], .field input[type=text], .field select{');
-  // Replace cost calculation atomically; invalid intermediate values must not delete result nodes.
-  const costStart=page.indexOf('function calcCost(){');
-  const costEnd=page.indexOf('function resetCost(){',costStart);
-  if(costStart<0 || costEnd<0) throw new Error('Не найдена функция расчёта стоимости');
-  page=page.slice(0,costStart)+"function calcCost(){\n  const power = readCostNumber('cost-power');\n  const count = readCostNumber('cost-count');\n  const hours = readCostNumber('cost-hours');\n  const days = readCostNumber('cost-days');\n  const tariff = readCostNumber('cost-tariff');\n  const box = document.getElementById('cost-result');\n  let warning = box.querySelector('.cost-validation-warning');\n  const values = [power,count,hours,days,tariff];\n  if(values.some(v=>!Number.isFinite(v)) || power<0 || count<1 || hours<0 || hours>24 || days<1 || days>31 || tariff<0){\n    if(!warning){\n      warning=document.createElement('div');\n      warning.className='row cost-validation-warning';\n      warning.style.cssText='color:var(--red);font-family:var(--mono);font-size:12px;line-height:1.5;';\n      warning.textContent='Проверьте значения: мощность и тариф неотрицательные, количество и дни больше нуля, часы — от 0 до 24.';\n      box.prepend(warning);\n    }\n    warning.hidden=false;\n    return;\n  }\n  if(warning) warning.hidden=true;\n  box.className='result';\n  const totalPower=power*count/1000;\n  const hour=totalPower*tariff;\n  const day=hour*hours;\n  const month=day*days;\n  const energyMonth=totalPower*hours*days;\n  const money=n=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(n);\n  const number=n=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:3}).format(n);\n  document.getElementById('cost-total-power').innerHTML=number(totalPower)+' <small>кВт</small>';\n  document.getElementById('cost-hour').innerHTML=money(hour)+' <small>₽</small>';\n  document.getElementById('cost-day').innerHTML=money(day)+' <small>₽</small>';\n  document.getElementById('cost-month').innerHTML=money(month)+' <small>₽</small>';\n  document.getElementById('cost-energy').innerHTML=number(energyMonth)+' <small>кВт·ч</small>';\n}"+'\\n'+page.slice(costEnd);
-  page=page.replace(
-    "document.querySelectorAll('#tab-cost input').forEach(input=>input.addEventListener('input',calcCost));",
-    "document.querySelectorAll('#tab-cost input').forEach(input=>{input.addEventListener('input',calcCost);input.addEventListener('change',calcCost);});"
+  const replaceRequired=(oldText,newText)=>{
+    if(!page.includes(oldText)) throw new Error("Не найден ожидаемый фрагмент приложения");
+    page=page.replace(oldText,newText);
+  };
+
+  replaceRequired(
+    '.field input[type=number], .field select{',
+    '.field input[type=number], .field input[type=text], .field select{'
+  );
+  replaceRequired(
+    '.field input[type=number]:focus,.field select:focus{',
+    '.field input[type=number]:focus,.field input[type=text]:focus,.field select:focus{'
   );
 
-    document.open();document.write(page);document.close();
- }catch(e){document.body.textContent="Не удалось загрузить приложение: "+e.message;}
+  replaceRequired(
+    '<input type="number" id="cost-power" min="0" step="1" value="1000" inputmode="decimal">',
+    '<input type="text" id="cost-power" inputmode="decimal" autocomplete="off" value="1000">'
+  );
+  replaceRequired(
+    '<input type="number" id="cost-hours" min="0" max="24" step="0.1" value="8" inputmode="decimal">',
+    '<input type="text" id="cost-hours" inputmode="decimal" autocomplete="off" value="8">'
+  );
+  replaceRequired(
+    '<input type="number" id="cost-tariff" min="0" step="0.01" value="6.5" inputmode="decimal">',
+    '<input type="text" id="cost-tariff" inputmode="decimal" autocomplete="off" value="6.5">'
+  );
+
+  const energyMarker="/* ---------------- ENERGY COST ---------------- */";
+  if(!page.includes(energyMarker)) throw new Error("Не найден раздел стоимости электроэнергии");
+  page=page.replace(energyMarker,energyMarker+"\\n"+"function readCostNumber(id){const raw=String(document.getElementById(id).value??'').trim().replace(/\\s+/g,'').replace(',','.');return raw===''?NaN:Number(raw);}");
+
+  const calcStart=page.indexOf("function calcCost(){");
+  const calcEnd=page.indexOf("function resetCost(){",calcStart);
+  if(calcStart<0 || calcEnd<0) throw new Error("Не найдена функция расчёта стоимости");
+  page=page.slice(0,calcStart)+"function calcCost(){\n  const power=readCostNumber('cost-power');\n  const count=readCostNumber('cost-count');\n  const hours=readCostNumber('cost-hours');\n  const days=readCostNumber('cost-days');\n  const tariff=readCostNumber('cost-tariff');\n  const box=document.getElementById('cost-result');\n  let warning=box.querySelector('.cost-validation-warning');\n  const values=[power,count,hours,days,tariff];\n  if(values.some(v=>!Number.isFinite(v)) || power<0 || count<1 || !Number.isInteger(count) || hours<0 || hours>24 || days<1 || days>31 || !Number.isInteger(days) || tariff<0){\n    if(!warning){\n      warning=document.createElement('div');\n      warning.className='row cost-validation-warning';\n      warning.style.cssText='color:var(--red);font-family:var(--mono);font-size:14px;line-height:1.5;';\n      warning.textContent='Проверьте значения: мощность и тариф неотрицательные, количество — целое число от 1, дни — от 1 до 31, часы — от 0 до 24.';\n      box.prepend(warning);\n    }\n    warning.hidden=false;\n    box.className='result error';\n    return;\n  }\n  if(warning) warning.hidden=true;\n  box.className='result';\n  const totalPower=power*count/1000;\n  const hour=totalPower*tariff;\n  const day=hour*hours;\n  const month=day*days;\n  const energyMonth=totalPower*hours*days;\n  const money=n=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:2}).format(n);\n  const number=n=>new Intl.NumberFormat('ru-RU',{maximumFractionDigits:3}).format(n);\n  document.getElementById('cost-total-power').innerHTML=number(totalPower)+' <small>кВт</small>';\n  document.getElementById('cost-hour').innerHTML=money(hour)+' <small>₽</small>';\n  document.getElementById('cost-day').innerHTML=money(day)+' <small>₽</small>';\n  document.getElementById('cost-month').innerHTML=money(month)+' <small>₽</small>';\n  document.getElementById('cost-energy').innerHTML=number(energyMonth)+' <small>кВт·ч</small>';\n}"+"\\n"+page.slice(calcEnd);
+
+  document.open();
+  document.write(page);
+  document.close();
+ }catch(e){
+  document.body.textContent="Не удалось загрузить приложение: "+e.message;
+ }
 })();
-</script></body></html>
+</script>
+</body>
+</html>
