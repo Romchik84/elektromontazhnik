@@ -189,40 +189,52 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
     }
   }
 
-  // Move the mAh-to-Wh converter out of the battery runtime calculator into its own main tab.
+  // Keep both tools inside the Batteries section as two expandable subsections.
   const batteryConverter=document.querySelector('#tab-battery .battery-converter');
-  const batteryButton=document.querySelector('.terminal[data-tab="battery"]');
-  if(batteryConverter && batteryButton && batteryRoot){
-    const converterSummary=batteryConverter.querySelector('summary');
-    if(converterSummary) converterSummary.remove();
-    batteryConverter.open=true;
+  const batteryGroups=batteryRoot&&batteryRoot.querySelector('.battery-accordion-list');
+  const batteryResult=batteryRoot&&batteryRoot.querySelector('#battery-result');
+  if(batteryRoot && batteryConverter && batteryGroups && batteryResult){
+    const runtimeSection=document.createElement('details');
+    runtimeSection.className='battery-major-section';
+    runtimeSection.open=true;
+    const runtimeSummary=document.createElement('summary');
+    runtimeSummary.textContent='Расчёт времени работы';
+    const runtimeContent=document.createElement('div');
+    runtimeContent.className='battery-major-content';
+
+    const resetButton=Array.from(batteryRoot.querySelectorAll('button')).find(button=>(button.getAttribute('onclick')||'').includes('resetBattery'));
+    const noteElements=Array.from(batteryRoot.children).filter(element=>element.classList.contains('note'));
+
+    runtimeContent.appendChild(batteryGroups);
+    runtimeContent.appendChild(batteryResult);
+    if(resetButton) runtimeContent.appendChild(resetButton);
+    noteElements.forEach(note=>runtimeContent.appendChild(note));
+    runtimeSection.append(runtimeSummary,runtimeContent);
+
     batteryConverter.classList.remove('battery-accordion');
-    batteryConverter.classList.add('battery-converter-card');
+    batteryConverter.classList.add('battery-major-section','battery-converter-section');
+    const converterSummary=batteryConverter.querySelector('summary');
+    if(converterSummary) converterSummary.textContent='Перевод мА·ч в Вт·ч';
 
-    const converterPanel=document.createElement('section');
-    converterPanel.className='panel';
-    converterPanel.id='tab-mahwh';
-    const converterHeading=document.createElement('h2');
-    converterHeading.textContent='Перевод мА·ч в Вт·ч';
-    const converterIntro=document.createElement('p');
-    converterIntro.className='lead';
-    converterIntro.textContent='Самостоятельный пересчёт ёмкости аккумулятора в запас энергии. Этот инструмент не связан с расчётом времени автономной работы.';
-    converterPanel.append(converterHeading,converterIntro,batteryConverter);
-    batteryRoot.parentElement.insertBefore(converterPanel,batteryRoot.nextSibling);
+    batteryRoot.insertBefore(runtimeSection,batteryConverter);
 
-    const converterButton=batteryButton.cloneNode(true);
-    converterButton.dataset.tab='mahwh';
-    const screw=converterButton.querySelector('.screw');
-    converterButton.innerHTML='';
-    if(screw) converterButton.appendChild(screw);
-    const label=document.createElement('span');
-    label.textContent='мА·ч → Вт·ч';
-    converterButton.appendChild(label);
-    batteryButton.insertAdjacentElement('afterend',converterButton);
-
-    const standaloneStyle=document.createElement('style');
-    standaloneStyle.textContent='.battery-converter-card{display:block;border:1px solid var(--border,#343a40);border-radius:12px;background:var(--surface,#1d2227);overflow:hidden;margin:12px 0}.battery-converter-card>.field-grid{padding:14px}.battery-converter-card>.result{margin:0 14px 14px}.battery-converter-card>.note{margin:0 14px 14px}';
-    document.head.appendChild(standaloneStyle);
+    const sectionsStyle=document.createElement('style');
+    sectionsStyle.textContent=`
+      .battery-major-section{border:1px solid var(--border,#343a40);border-radius:12px;background:var(--surface,#1d2227);overflow:hidden;margin:12px 0}
+      .battery-major-section>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;font-weight:700;font-size:16px;color:var(--text,#f0f0f0);min-height:52px}
+      .battery-major-section>summary::-webkit-details-marker{display:none}
+      .battery-major-section>summary:after{content:'＋';font-size:20px;line-height:1;color:var(--accent,#e6b83f);flex:0 0 auto}
+      .battery-major-section[open]>summary:after{content:'−'}
+      .battery-major-section[open]>summary{border-bottom:1px solid var(--border,#343a40)}
+      .battery-major-content{padding:12px 14px 14px}
+      .battery-major-content .battery-accordion-list{margin:0 0 12px}
+      .battery-major-content .result{margin:0 0 12px}
+      .battery-major-content .note{margin:0 0 12px}
+      .battery-converter-section>.field-grid{padding:14px}
+      .battery-converter-section>.result{margin:0 14px 14px}
+      .battery-converter-section>.note{margin:0 14px 14px}
+    `;
+    document.head.appendChild(sectionsStyle);
   }
  }catch(e){
   document.body.textContent="Не удалось загрузить приложение: "+e.message;
