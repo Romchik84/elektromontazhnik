@@ -18,6 +18,8 @@
   page=page.replace("parseFloat(document.getElementById('cost-hours').value)", "readCostNumber('cost-hours')");
   page=page.replace("parseFloat(document.getElementById('cost-days').value)", "readCostNumber('cost-days')");
   page=page.replace("parseFloat(document.getElementById('cost-tariff').value)", "readCostNumber('cost-tariff')");
+  page=page.replace("    box.innerHTML='<div class=\"row\"><span class=\"v\">Проверьте значения: мощность и тариф неотрицательные, количество и дни больше нуля, часы — от 0 до 24.</span></div>';","    let warning=box.querySelector('.cost-validation-warning');if(!warning){warning=document.createElement('div');warning.className='row cost-validation-warning';warning.innerHTML='<span class=\"v\">Проверьте значения: мощность и тариф неотрицательные, количество и дни больше нуля, часы — от 0 до 24.</span>';box.prepend(warning);}warning.hidden=false;");
+  page=page.replace("  box.className='result';\n  const totalPower=power*count/1000;","  box.className='result';\n  const warning=box.querySelector('.cost-validation-warning');if(warning)warning.hidden=true;\n  const totalPower=power*count/1000;");
   document.open();document.write(page);document.close();
  }catch(e){document.body.textContent="Не удалось загрузить приложение: "+e.message;}
 })();
