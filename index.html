@@ -144,6 +144,8 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
       const mainResult=document.getElementById('battery-result');
       if(mainResult) batteryRoot.insertBefore(converter,mainResult);
 
+      // Normalize backslash-escaped whitespace regexes in injected calculators.
+      page=page.replaceAll('replace(/\\\\s+/g','replace(/\\s+/g');
       const calcMahWh=()=>{
         const parse=id=>{
           const raw=String(document.getElementById(id).value??'').trim().replace(/\\s+/g,'').replace(',','.');
