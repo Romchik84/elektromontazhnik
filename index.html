@@ -262,7 +262,7 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
       const modeSelect=document.getElementById('loop-input-mode');
       const currentInput=document.getElementById('loop-measured-ik');
       const parse=value=>{
-        const raw=String(value??'').trim().replace(/\\s+/g,'').replace(',','.');
+        const raw=String(value??'').trim().replace(/\s+/g,'').replace(',','.');
         return raw===''?NaN:Number(raw);
       };
       const syncFromCurrent=()=>{
@@ -271,6 +271,9 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
         const u0=parse(u0Input.value);
         zsInput.value=Number.isFinite(current)&&current>0&&Number.isFinite(u0)&&u0>0?(u0/current).toFixed(6):'';
         calcLoop();
+        if(!Number.isFinite(current)||current<=0){
+          document.getElementById('loop-status').textContent='Введите измеренный ток КЗ больше 0';
+        }
       };
       const applyMode=()=>{
         const currentMode=modeSelect.value==='ik';
