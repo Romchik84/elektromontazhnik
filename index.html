@@ -240,6 +240,64 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
     `;
     document.head.appendChild(sectionsStyle);
   }
+
+  // Allow the phase-neutral loop calculator to accept either measured impedance or measured prospective short-circuit current.
+  const loopPanel=document.getElementById('tab-loop');
+  if(loopPanel){
+    const grid=loopPanel.querySelector('.field-grid');
+    const zsInput=document.getElementById('loop-zs');
+    const u0Input=document.getElementById('loop-u0');
+    if(grid && zsInput && u0Input){
+      const zsField=zsInput.closest('.field');
+      const modeField=document.createElement('div');
+      modeField.className='field';
+      modeField.innerHTML='<label for="loop-input-mode">Что вводим</label><select id="loop-input-mode"><option value="zs" selected>Сопротивление петли, Ом</option><option value="ik">Ток короткого замыкания, А</option></select>';
+      const currentField=document.createElement('div');
+      currentField.className='field';
+      currentField.style.display='none';
+      currentField.innerHTML='<label for="loop-measured-ik">Измеренный ток КЗ Ik, А</label><input type="text" id="loop-measured-ik" inputmode="decimal" autocomplete="off" placeholder="Например, 287">';
+      grid.insertBefore(modeField,zsField);
+      grid.insertBefore(currentField,zsField.nextSibling);
+
+      const modeSelect=document.getElementById('loop-input-mode');
+      const currentInput=document.getElementById('loop-measured-ik');
+      const parse=value=>{
+        const raw=String(value??'').trim().replace(/\\s+/g,'').replace(',','.');
+        return raw===''?NaN:Number(raw);
+      };
+      const syncFromCurrent=()=>{
+        if(modeSelect.value!=='ik') return;
+        const current=parse(currentInput.value);
+        const u0=parse(u0Input.value);
+        zsInput.value=Number.isFinite(current)&&current>0&&Number.isFinite(u0)&&u0>0?(u0/current).toFixed(6):'';
+        calcLoop();
+      };
+      const applyMode=()=>{
+        const currentMode=modeSelect.value==='ik';
+        zsField.style.display=currentMode?'none':'';
+        currentField.style.display=currentMode?'':'none';
+        if(currentMode) syncFromCurrent();
+        else calcLoop();
+      };
+      modeSelect.addEventListener('change',applyMode);
+      currentInput.addEventListener('input',syncFromCurrent);
+      u0Input.addEventListener('input',()=>{if(modeSelect.value==='ik') syncFromCurrent();});
+      applyMode();
+
+      window.resetLoop=function(){
+        zsInput.value='';
+        currentInput.value='';
+        u0Input.value='230';
+        document.getElementById('loop-curve').value='C';
+        document.getElementById('loop-in').value='16';
+        modeSelect.value='zs';
+        applyMode();
+      };
+      const ikLabel=loopPanel.querySelector('#loop-ik')?.closest('.row')?.querySelector('.k');
+      if(ikLabel) ikLabel.textContent='Ток короткого замыкания Ik';
+    }
+  }
+
  }catch(e){
   document.body.textContent="Не удалось загрузить приложение: "+e.message;
  }
