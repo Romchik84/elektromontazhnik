@@ -270,7 +270,7 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
         const current=parse(currentInput.value);
         const u0=parse(u0Input.value);
         zsInput.value=Number.isFinite(current)&&current>0&&Number.isFinite(u0)&&u0>0?(u0/current).toFixed(6):'';
-        calcLoop();
+        zsInput.dispatchEvent(new Event('input',{bubbles:true}));
         if(!Number.isFinite(current)||current<=0){
           document.getElementById('loop-status').textContent='Введите измеренный ток КЗ больше 0';
         }
@@ -280,7 +280,7 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
         zsField.style.display=currentMode?'none':'';
         currentField.style.display=currentMode?'':'none';
         if(currentMode) syncFromCurrent();
-        else calcLoop();
+        else zsInput.dispatchEvent(new Event('input',{bubbles:true}));
       };
       modeSelect.addEventListener('change',applyMode);
       currentInput.addEventListener('input',syncFromCurrent);
