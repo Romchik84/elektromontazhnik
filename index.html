@@ -304,6 +304,200 @@ body{min-height:100vh;min-height:100dvh;background:#14171a;color:#eee}
     }
   }
 
+
+  // Extend voltage relay reference with ZUBR/RBUZ and TOMZN model families.
+  const relaySelect=document.getElementById('relay-model-select');
+  const relayCardsRoot=document.getElementById('relay-model-novatek')?.parentElement;
+  if(relaySelect && relayCardsRoot && !document.getElementById('relay-model-zubr')){
+    relaySelect.add(new Option('ZUBR / RBUZ D2 и D','zubr'));
+    relaySelect.add(new Option('TOMZN TOVPD1 (EC / VAE-Z / DK)','tomzn'));
+
+    const zubr=document.createElement('div');
+    zubr.className='relay-model-card';
+    zubr.id='relay-model-zubr';
+    zubr.hidden=true;
+    zubr.innerHTML=`
+      <h3>ZUBR / RBUZ — D2 и D</h3>
+      <p class="lead">ZUBR и RBUZ D2 — родственные исполнения одной продуктовой платформы DS Electronics, встречающиеся под разными торговыми обозначениями в зависимости от рынка. Выбирайте не просто бренд, а точное исполнение и редакцию паспорта.</p>
+      <div class="relay-spec-grid">
+        <div><span>Серия D2, исполнения</span><strong>32 / 40 / 50 / 63 А</strong></div>
+        <div><span>Сеть</span><strong>Однофазная, 230 В</strong></div>
+        <div><span>Предел Umax</span><strong>220–280 В</strong></div>
+        <div><span>Предел Umin</span><strong>100–210 В*</strong></div>
+        <div><span>Питание реле</span><strong>100–420 В</strong></div>
+        <div><span>Монтаж</span><strong>DIN-рейка, 2 модуля</strong></div>
+      </div>
+      <details class="relay-accordion" open>
+        <summary>Схема D2 с транзитом нуля — исполнения по паспорту 2025</summary>
+        <div class="relay-content">
+          <svg viewBox="0 0 680 330" role="img" aria-label="ZUBR D2 с транзитом нуля: L вход в клемму 1, L выход из клеммы 2, N вход в клемму 3, N выход из клеммы 4">
+            <rect x="205" y="42" width="270" height="230" rx="12" fill="#242a30" stroke="#78838c" stroke-width="2"/>
+            <text x="340" y="72" text-anchor="middle" fill="#f2f4f5" font-size="18" font-weight="bold">ZUBR / RBUZ D2</text>
+            <text x="245" y="117" fill="#f2f4f5" font-size="15">1 · L вход</text>
+            <text x="245" y="158" fill="#f2f4f5" font-size="15">2 · L выход</text>
+            <text x="245" y="207" fill="#f2f4f5" font-size="15">3 · N вход</text>
+            <text x="245" y="248" fill="#f2f4f5" font-size="15">4 · N выход</text>
+            <path d="M30 122 H205 M475 162 H650" stroke="#e2b94c" stroke-width="5" fill="none"/>
+            <path d="M30 212 H205 M475 252 H650" stroke="#7da8d5" stroke-width="5" fill="none"/>
+            <text x="30" y="101" fill="#e2b94c" font-size="15" font-weight="bold">Сеть L</text>
+            <text x="30" y="192" fill="#7da8d5" font-size="15" font-weight="bold">Сеть N</text>
+            <text x="650" y="142" text-anchor="end" fill="#e2b94c" font-size="14">L к нагрузке</text>
+            <text x="650" y="285" text-anchor="end" fill="#7da8d5" font-size="14">N к нагрузке</text>
+            <text x="340" y="310" text-anchor="middle" fill="#aab4bc" font-size="12">N проходит через устройство только у версии с клеммами 3 и 4</text>
+          </svg>
+          <p><strong>Клеммы по паспорту:</strong> 1 — вход L; 2 — выход L; 3 — вход N; 4 — выход N. В этой модификации реле коммутирует оба проводника.</p>
+          <p class="relay-warning">В продаже и в старых паспортах встречается D2 без транзита нуля: питание L/N — на 1 и 3, выходящая фаза — с 2, а нейтраль нагрузки идёт на отдельную N-шину. Не переносите схему 1–4 на такой корпус. Сначала проверьте надпись «с транзитом нуля» и схему именно вашей редакции паспорта.</p>
+          <a href="https://ds-electronics.com.ua/files/instructions/manual_zubr_d2_3g345_2508_ru.pdf" target="_blank" rel="noopener">Паспорт ZUBR D2 с транзитом нуля, редакция 2025 (PDF)</a><br>
+          <a href="https://ds-electronics.com.ua/ru/support/manuals/" target="_blank" rel="noopener">Архив инструкций производителя ZUBR</a><br>
+          <a href="https://rbuz.com.ru/rele/naprjazhenija/d2/" target="_blank" rel="noopener">Страница RBUZ D2</a>
+        </div>
+      </details>
+      <details class="relay-accordion">
+        <summary>Серия D2 — модели и пределы</summary>
+        <div class="relay-content">
+          <p>В паспорте D2 указаны исполнения 32, 40, 50 и 63 А. Номинальная мощность AC-1 для них — 7,0; 8,8; 11,0 и 13,9 кВА соответственно. Номинал реле выбирают совместно с вводным автоматом, сечением проводников и схемой защиты.</p>
+          <p>* Нижний предел отличается между поколениями и редакциями: в ранних документах может быть 120 В, в паспорте 2025 для версии с транзитом нуля — 100 В. Сверяйте паспорт конкретной модификации.</p>
+        </div>
+      </details>
+      <details class="relay-accordion">
+        <summary>Настройка и меню D2</summary>
+        <div class="relay-content">
+          <p>В D2 доступны отдельная настройка нижнего и верхнего порогов, задержки повторного включения и дополнительные пункты меню. Конкретный набор пунктов, пределы и назначение режимов зависят от версии прошивки и редакции паспорта.</p>
+          <p><strong>Практический порядок:</strong> считайте версию инструкции с корпуса или сайта производителя, затем настройте Umin, Umax и задержку ton по меню именно этой версии. Не используйте значения Welrok для ZUBR/RBUZ — похожее назначение кнопок не означает одинаковое меню.</p>
+        </div>
+      </details>
+      <details class="relay-accordion">
+        <summary>Другие серии ZUBR</summary>
+        <div class="relay-content">
+          <p>У производителя также есть ZUBR D, Dt, CV2, MF/MF2, розеточные SR1 и R116Y, трёхфазные 3F и D6 red. Это разные устройства: у MF/MF2 есть дополнительные функции, а трёхфазные серии нельзя подключать по схеме однофазного D2.</p>
+          <a href="https://ds-electronics.com.ua/ru/support/manuals/" target="_blank" rel="noopener">Официальный каталог инструкций и схем ZUBR</a>
+        </div>
+      </details>
+    `;
+
+    const tomzn=document.createElement('div');
+    tomzn.className='relay-model-card';
+    tomzn.id='relay-model-tomzn';
+    tomzn.hidden=true;
+    tomzn.innerHTML=`
+      <h3>TOMZN — серия TOVPD1</h3>
+      <p class="lead">Под общим названием TOVPD1 выпускаются разные версии. Ниже приведены конкретные исполнения; диапазоны и меню одной версии нельзя автоматически переносить на другую.</p>
+      <div class="field">
+        <label for="tomzn-model">Исполнение</label>
+        <select id="tomzn-model">
+          <option value="ec" selected>TOVPD1-63-EC (40 / 63 А)</option>
+          <option value="vae">TOVPD1-63VAE-Z</option>
+          <option value="dk">TOVPD1-63DK (отключает L и N)</option>
+        </select>
+      </div>
+      <div id="tomzn-card-ec">
+        <div class="relay-spec-grid">
+          <div><span>Сеть</span><strong>230 В, 50/60 Гц</strong></div>
+          <div><span>Варианты</span><strong>40 / 63 А</strong></div>
+          <div><span>Umax</span><strong>230–300 В</strong></div>
+          <div><span>Umin</span><strong>140–210 В</strong></div>
+          <div><span>Задержка включения</span><strong>1–500 с</strong></div>
+          <div><span>Монтаж</span><strong>DIN 35 мм</strong></div>
+        </div>
+        <details class="relay-accordion" open>
+          <summary>Схема подключения TOVPD1-63-EC</summary>
+          <div class="relay-content">
+            <svg viewBox="0 0 680 300" role="img" aria-label="TOMZN EC: входящие L и N подключаются к входным клеммам устройства, выходящие L и N с OUT идут к нагрузке">
+              <rect x="215" y="40" width="250" height="210" rx="12" fill="#242a30" stroke="#78838c" stroke-width="2"/>
+              <text x="340" y="72" text-anchor="middle" fill="#f2f4f5" font-size="18" font-weight="bold">TOMZN TOVPD1-63-EC</text>
+              <text x="250" y="124" fill="#e2b94c" font-size="16">L IN</text>
+              <text x="250" y="190" fill="#7da8d5" font-size="16">N IN</text>
+              <text x="385" y="124" fill="#e2b94c" font-size="16">L OUT</text>
+              <text x="385" y="190" fill="#7da8d5" font-size="16">N OUT</text>
+              <path d="M28 128 H215 M465 128 H650 M28 194 H215 M465 194 H650" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <path d="M28 128 H215 M465 128 H650" stroke="#e2b94c" stroke-width="5" fill="none"/>
+              <path d="M28 194 H215 M465 194 H650" stroke="#7da8d5" stroke-width="5" fill="none"/>
+              <text x="28" y="105" fill="#e2b94c" font-size="14">Сеть L</text>
+              <text x="28" y="173" fill="#7da8d5" font-size="14">Сеть N</text>
+              <text x="650" y="105" text-anchor="end" fill="#e2b94c" font-size="14">К нагрузке L</text>
+              <text x="650" y="173" text-anchor="end" fill="#7da8d5" font-size="14">К нагрузке N</text>
+            </svg>
+            <p>По руководству EC питание подаётся на входные клеммы L и N, нагрузка подключается к выходным клеммам OUT. В руководстве указано: ввод сверху, вывод снизу. Номера клемм на иллюстрации намеренно не указаны — используйте маркировку IN/OUT на своём корпусе.</p>
+            <p class="relay-warning">Перед монтажом проверьте, что у вашей версии действительно есть отдельные L IN/N IN и L OUT/N OUT. Не используйте схему TOMZN для Welrok, ZUBR/RBUZ или Novatek.</p>
+          </div>
+        </details>
+        <details class="relay-accordion">
+          <summary>Параметры EC и порядок настройки</summary>
+          <div class="relay-content">
+            <div class="relay-setting"><strong>A1 — задержка подачи питания</strong><span>1–500 с; заводское значение 3 с.</span></div>
+            <div class="relay-setting"><strong>A2 — отключение по перенапряжению</strong><span>230–300 В; по руководству EC значение по умолчанию 250 В.</span></div>
+            <div class="relay-setting"><strong>A3 — восстановление после перенапряжения</strong><span>220–295 В; значение по умолчанию 230 В.</span></div>
+            <div class="relay-setting"><strong>A4 / A5 — задержка восстановления и время срабатывания по Umax</strong><span>A4: 1–500 с, по умолчанию 30 с; A5: 0,1–30 с, по умолчанию 1 с.</span></div>
+            <div class="relay-setting"><strong>A6 / A7 — Umin и восстановление</strong><span>A6: 140–210 В, по умолчанию 170 В; A7: 145–215 В, по умолчанию 190 В.</span></div>
+            <div class="relay-setting"><strong>A8 / A9 — задержка восстановления и время срабатывания по Umin</strong><span>A8: 1–500 с, по умолчанию 30 с; A9: 0,1–30 с, по умолчанию 1 с.</span></div>
+            <div class="relay-setting"><strong>A10 — ограничение тока</strong><span>Для версии 40 А: 0,5–40 А, по умолчанию 20 А; для версии 63 А: 0,5–63 А, по умолчанию 40 А.</span></div>
+            <div class="relay-setting"><strong>A11 / A12 — задержка восстановления и время срабатывания по току</strong><span>A11: 1–500 с, по умолчанию 30 с; A12: 0,1–30 с, по умолчанию 1 с.</span></div>
+            <div class="relay-setting"><strong>A13 — коррекция измерения напряжения</strong><span>Около ±9,5–10%; точный предел зависит от ревизии.</span></div>
+            <div class="relay-setting"><strong>A14 — число повторных превышений тока</strong><span>1–20; заводское значение OFF.</span></div>
+            <p><strong>Кнопки:</strong> SET — вход/подтверждение параметра; ▲/▼ — выбор параметра и изменение значения; длительное нажатие SET — выход из меню. Заводской сброс и журнал аварий вызываются длительным удержанием кнопок по инструкции конкретной версии.</p>
+          </div>
+        </details>
+      </div>
+      <div id="tomzn-card-vae" hidden>
+        <div class="relay-spec-grid">
+          <div><span>Модель</span><strong>TOVPD1-63VAE-Z</strong></div>
+          <div><span>Сеть</span><strong>AC 230 В</strong></div>
+          <div><span>Ток</span><strong>до 63 А</strong></div>
+          <div><span>Umax</span><strong>220–280 В</strong></div>
+          <div><span>Umin</span><strong>120–210 В</strong></div>
+          <div><span>Токовая защита</span><strong>0,1–60 А</strong></div>
+          <div><span>Защита по мощности</span><strong>0,1–13,9 кВт</strong></div>
+          <div><span>Задержка повторного включения</span><strong>3–600 с</strong></div>
+        </div>
+        <p>В версии VAE-Z заявлены защита от перенапряжения, пониженного напряжения, перегрузки и сверхтока, автоматическое восстановление и индикация U/I/P. Схему и назначение клемм следует брать из паспорта именно VAE-Z.</p>
+      </div>
+      <div id="tomzn-card-dk" hidden>
+        <div class="relay-spec-grid">
+          <div><span>Модель</span><strong>TOVPD1-63DK</strong></div>
+          <div><span>Коммутация</span><strong>Отключает L и N</strong></div>
+          <div><span>Защита</span><strong>Umax / Umin / ток</strong></div>
+          <div><span>Монтаж</span><strong>DIN-рейка</strong></div>
+        </div>
+        <p>Производитель отдельно указывает, что DK способен одновременно отключать фазу и нейтраль. Это конструктивное отличие от исполнений, которые размыкают только фазу. По точным диапазонам и клеммам сверяйте маркировку DK и его инструкцию.</p>
+      </div>
+      <details class="relay-accordion">
+        <summary>Общие замечания по TOMZN</summary>
+        <div class="relay-content">
+          <p>Под обозначением TOVPD1 есть несколько ревизий: EC, VAE-Z, DK и другие. У них различаются диапазоны, номера параметров, способ коммутации N и алгоритмы восстановления. Не переносите таблицу A1–A14 с EC на любую модель TOVPD1 без проверки паспорта.</p>
+          <a href="https://tomzn.com/product/tomzn-voltage-protector-ac230v-63a-adjustable-over-under-voltage-protective-overload-protection-ocp-auto-reconnect-u-i-p-display/" target="_blank" rel="noopener">Официальная страница TOMZN TOVPD1-63VAE-Z</a><br>
+          <a href="https://tomzn.com/product/60a-din-rail-230v-adjustable-over-and-under-voltage-protective-device-protector-relay-monitor-current-limit-tomzn-tovpd1-63-ec/" target="_blank" rel="noopener">Страница TOMZN TOVPD1-63-EC</a><br>
+          <a href="https://tomzn.com/product/tomzn-tovpd1-63dk-isolate-l-n-110v-230v-ac-din-rail-ovp-ocp-uvp-voltage-protector-63a-relay-automatic-adjustable-delay-on/" target="_blank" rel="noopener">Страница TOMZN TOVPD1-63DK</a><br>
+          <a href="https://manuals.plus/ae/1005001710644402" target="_blank" rel="noopener">Руководство EC с таблицей A1–A14</a>
+        </div>
+      </details>
+    `;
+
+    relayCardsRoot.append(zubr,tomzn);
+    const tomznSelect=document.getElementById('tomzn-model');
+    const tomznVariants={
+      ec:document.getElementById('tomzn-card-ec'),
+      vae:document.getElementById('tomzn-card-vae'),
+      dk:document.getElementById('tomzn-card-dk')
+    };
+    const showTomznVariant=()=>{
+      Object.entries(tomznVariants).forEach(([key,card])=>{if(card) card.hidden=key!==tomznSelect.value;});
+    };
+    tomznSelect.addEventListener('change',showTomznVariant);
+    showTomznVariant();
+
+    const relayModelCards={
+      welrok:document.getElementById('relay-model-welrok'),
+      novatek:document.getElementById('relay-model-novatek'),
+      zubr,
+      tomzn
+    };
+    const showRelayModel=()=>{
+      Object.entries(relayModelCards).forEach(([key,card])=>{if(card) card.hidden=key!==relaySelect.value;});
+    };
+    relaySelect.addEventListener('change',showRelayModel);
+    showRelayModel();
+  }
+
  }catch(e){
   document.body.textContent="Не удалось загрузить приложение: "+e.message;
  }
